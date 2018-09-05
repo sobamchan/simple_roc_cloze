@@ -30,7 +30,7 @@ class ValidationFormatData(data.Dataset):
                  for s in df.RandomFifthSentenceQuiz2]
         self.opts = list(zip(opt1s, opt2s))
 
-        self.answers = df.AnswerRightEnding.values.tolist()
+        self.answers = [a-1 for a in df.AnswerRightEnding.values.tolist()]
 
     def __len__(self):
         return len(self.answers)

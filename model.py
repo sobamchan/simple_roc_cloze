@@ -31,11 +31,9 @@ class FTMLP_SUM(nn.Module):
         self.layers = nn.Sequential(*layers)
 
     def forward(self, b_stories, b_options):
-        print(len(b_stories[0]))
         bsz = len(b_stories)
         story_vec = np.zeros((bsz, self.nemb))
         option_vec = np.zeros((bsz, self.nemb))
-        print(bsz)
 
         for i, stories in enumerate(b_stories):
             for story in stories:
@@ -45,6 +43,7 @@ class FTMLP_SUM(nn.Module):
                     except KeyError:
                         story_vec[i] +=\
                             self.ft.get_word_vector('graph-out-of-vocab')
+                story_vec[i] /= len(story.split())
 
         for i, options in enumerate(b_options):
             for option in options:
@@ -54,16 +53,12 @@ class FTMLP_SUM(nn.Module):
                     except KeyError:
                         option_vec[i] +=\
                             self.ft.get_word_vector('graph-out-of-vocab')
+                option_vec[i] /= len(option.split())
 
-        print(story_vec.shape)
-        print(option_vec.shape)
         x = np.concatenate((story_vec, option_vec), axis=1)
-        print(x.shape)
         x = torch.from_numpy(x).float()
         if self.use_cuda:
             x = x.cuda()
         x = Variable(x)
-        print(x.size())
         y = self.layers(x)
-        print(y.size())
         return y
