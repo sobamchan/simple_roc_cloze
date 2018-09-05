@@ -2,6 +2,7 @@ import numpy as np
 from data import get_loader
 from model import FTMLP_SUM
 
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
@@ -25,6 +26,7 @@ class Trainer:
         self.criterion = nn.CrossEntropyLoss()
 
     def train_one_epoch(self, iepoch):
+        self.model.train()
         losses = []
         for batch in self.train_loader:
             stories = list(zip(*batch['stories']))
@@ -41,3 +43,19 @@ class Trainer:
             self.optimizer.step()
             losses.append(loss.data.tolist()[0])
         return np.mean(losses)
+
+    def evaluate(self):
+        self.model.eval()
+        accs = []
+        for batch in self.test_loader:
+            stories = list(zip(*batch['stories']))
+            options = list(zip(*batch['options']))
+            y = self.model(stories, options)
+            target = Variable(batch['answers'].long())
+
+            if self.use_cuda:
+                target = target.cuda()
+
+            _, pred = torch.max(y, 1)
+            accs.append(torch.mean((pred == target).float()).data.tolist()[0])
+        return np.mean(accs)
