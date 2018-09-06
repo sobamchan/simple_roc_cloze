@@ -20,7 +20,10 @@ class Trainer:
         model = FTMLP_SUM(ft_path, nlayers, nemb, nhidden, use_cuda=use_cuda)
         if use_cuda:
             model.cuda()
-        optimizer = optim.SGD(model.parameters(), lr=lr)
+
+        # optimizer = optim.SGD(model.parameters(), lr=lr)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+
         self.model = model
         self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
@@ -47,6 +50,7 @@ class Trainer:
     def evaluate(self):
         self.model.eval()
         accs = []
+        losses = []
         for batch in self.test_loader:
             stories = list(zip(*batch['stories']))
             options = list(zip(*batch['options']))
@@ -57,5 +61,8 @@ class Trainer:
                 target = target.cuda()
 
             _, pred = torch.max(y, 1)
+            loss = self.criterion(y, target)
+            losses.append(loss.data.tolist()[0])
             accs.append(torch.mean((pred == target).float()).data.tolist()[0])
-        return np.mean(accs)
+
+        return np.mean(accs), np.mean(losses)
