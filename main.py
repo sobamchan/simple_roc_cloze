@@ -19,6 +19,7 @@ def getargs():
 
     p.add_argument('--bsz', type=int, default=32)
     p.add_argument('--lr', type=float, default=0.1)
+    p.add_argument('--optim-type', type=str, default='sgd')
 
     p.add_argument('--nlayers', type=int, default=3)
     p.add_argument('--nemb', type=int, default=300)
@@ -36,6 +37,7 @@ def main(args, logger):
             args.nemb,
             args.nhidden,
             args.lr,
+            args.optim_type,
             args.use_cuda
             )
 

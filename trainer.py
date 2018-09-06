@@ -11,7 +11,7 @@ from torch.autograd import Variable
 class Trainer:
 
     def __init__(self, data_dir, batch_size, ft_path,
-                 nlayers, nemb, nhidden, lr, use_cuda=True):
+                 nlayers, nemb, nhidden, lr, optim_type='sgd', use_cuda=True):
         train_loader, test_loader = get_loader(data_dir, batch_size)
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -21,8 +21,12 @@ class Trainer:
         if use_cuda:
             model.cuda()
 
-        # optimizer = optim.SGD(model.parameters(), lr=lr)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
+        if optim_type == 'sgd':
+            optimizer = optim.SGD(model.parameters(), lr=lr)
+        elif optim_type == 'adam':
+            optimizer = optim.Adam(model.parameters(), lr=lr)
+        elif optim_type == 'adagrad':
+            optimizer = optim.Adagrad(model.parameters(), lr=lr)
 
         self.model = model
         self.optimizer = optimizer
