@@ -3,7 +3,7 @@ import argparse
 
 import torch
 
-from trainer import Trainer
+from fasttext_mlp.trainer import Trainer
 from logger import Logger
 
 
