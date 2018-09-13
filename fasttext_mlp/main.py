@@ -1,5 +1,6 @@
 import os
 import argparse
+from pathlib import Path
 
 import torch
 
@@ -14,7 +15,12 @@ def getargs():
     p.add_argument('--no-cuda', action='store_false')
     p.add_argument('--epochs', type=int, default=1000)
 
-    p.add_argument('--ddir', type=str, default='../DATA/ROC')
+    dpath = '../DATA/ROC/cloze_test_val__spring2016_cloze_test_ALL_val'
+    p.add_argument('--ddir', type=str,
+                   default=dpath)
+    dpath = '../DATA/ROC/test_set_spring_2016.csv'
+    p.add_argument('--test-path', type=str,
+                   default=dpath)
     p.add_argument('--ftpath', type=str, default='../DATA/wiki.en.bin')
 
     p.add_argument('--bsz', type=int, default=32)
@@ -29,6 +35,7 @@ def getargs():
 
 
 def main(args, logger):
+    args.odir = Path(args.odir)
     t = Trainer(
             args.ddir,
             args.bsz,
@@ -42,6 +49,7 @@ def main(args, logger):
             )
 
     best_acc = -1
+    lr = args.lr
     for iepc in range(1, args.epochs + 1):
         logger.log('%dth epoch' % iepc)
         tr_loss = t.train_one_epoch(iepc)
@@ -50,11 +58,13 @@ def main(args, logger):
         if best_acc < val_acc:
             best_acc = val_acc
             logger.log('Best accuracy achived: %f!!!' % val_acc)
-        # else:
-        #     for pg in t.optimizer.param_groups:
-        #         pg['lr'] *= 0.8
-        #         lr = pg['lr']
-        #     logger.log('Decrease lr to %f' % lr)
+            t.make_submission(args.test_path, args.odir)
+            logger.log('Making submission to %s' % args.odir)
+        else:
+            for pg in t.optimizer.param_groups:
+                lr *= 0.8
+                pg['lr'] = lr
+            logger.log('Decrease lr to %f' % lr)
 
         logger.dump({
             'epoch': iepc,

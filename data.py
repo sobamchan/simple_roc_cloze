@@ -24,6 +24,8 @@ class ValidationFormatData(data.Dataset):
                for s in df.InputSentence4.values.tolist()]
         self.stories = list(zip(s1s, s2s, s3s, s4s))
 
+        self.ids = df.InputStoryid.values.tolist()
+
         opt1s = [prepro(s)
                  for s in df.RandomFifthSentenceQuiz1]
         opt2s = [prepro(s)

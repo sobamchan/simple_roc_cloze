@@ -1,5 +1,7 @@
+from collections import OrderedDict
 import numpy as np
-from data import get_loader
+import pandas as pd
+from data import get_loader, ValidationFormatData
 from model import FTMLP_SUM
 
 import torch
@@ -70,3 +72,21 @@ class Trainer:
             accs.append(torch.mean((pred == target).float()).data.tolist()[0])
 
         return np.mean(accs), np.mean(losses)
+
+    # def dump_cp(self, odir, prefix=''):
+    #     mpath = odir / ('%smodel.pt' % prefix)
+    #     torch.save(self.model.cpu(), mpath)
+    #     if self.use_cuda:
+    #         self.model.gpu()
+
+    def make_submission(self, test_path, odir):
+        ds = ValidationFormatData(test_path)
+        y = self.model(ds.stories, ds.opts)
+        _, pred = torch.max(y, 1)
+        pred += 1
+        ys = pred.data.tolist()
+
+        ids = ds.ids
+        df = pd.DataFrame(OrderedDict({'InputStoryid': ids,
+                                       'AnswerRightEnding': ys}))
+        df.to_csv(odir / 'answer.txt', index=False)
